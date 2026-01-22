@@ -49,7 +49,7 @@ func (b *Broker) Subscribe(topic string) chan string {
 
 	b.subsByTopic[topic] = append(b.subsByTopic[topic], ch)
 
-	b.logger.Info("+New Subscribe", "topic", topic, "count", len(b.subsByTopic[topic]))
+	b.logger.Info("[+][Subscribe]", "topic", topic, "count", len(b.subsByTopic[topic]))
 
 	return ch
 }
@@ -75,7 +75,7 @@ func (b *Broker) Unsubscribe(topic string, ch chan string) {
 				delete(b.subsByTopic, topic)
 			}
 
-			b.logger.Info("-Unsubscribe", "topic", topic, "count", len(b.subsByTopic[topic]))
+			b.logger.Info("[-][Unsubscribe]", "topic", topic, "count", len(b.subsByTopic[topic]))
 
 			return
 		}
