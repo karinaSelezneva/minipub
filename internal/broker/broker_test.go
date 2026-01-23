@@ -2,6 +2,7 @@ package broker
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -84,5 +85,27 @@ func TestUnsubscribe(t *testing.T) {
 			// 3. Проверяем результат
 			assert.Equal(t, tt.expectedCount, len(b.subsByTopic[tt.topic]))
 		})
+	}
+}
+
+func TestPublish(t *testing.T) {
+	b := NewBroker()
+	topic := "news"
+	msg := "Привет, go!"
+
+	// 1. Подписываемся
+	ch := b.Subscribe(topic)
+
+	// 2. Публикуем сообщение
+	b.Publish(topic, msg)
+
+	// 3. Проверяем получение с тайм-аутом
+	select {
+	case received := <-ch:
+		if received != msg {
+			t.Errorf("ожидали %s, получили %s", msg, received)
+		}
+	case <-time.After(time.Millisecond * 100):
+		t.Error("сообщение не было получено вовремя")
 	}
 }

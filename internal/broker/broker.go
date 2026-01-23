@@ -81,3 +81,36 @@ func (b *Broker) Unsubscribe(topic string, ch chan string) {
 		}
 	}
 }
+
+// Реализуй метод Publish(topic string, msg string):
+// 1. Захвати R-блокировку (чтение).
+// 2. Проверь, есть ли вообще такой топик.
+// 3. Пройдись циклом по всем каналам этого топика.
+// 4. Внутри цикла: используй select, чтобы попытаться отправить сообщение в канал.
+// 5. Если канал не готов принять сообщение (забит) — выведи в консоль fmt.Printf("Subscriber slow: skipping topic %s\n", topic).
+func (b *Broker) Publish(topic string, msg string) {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+
+	subs, ok := b.subsByTopic[topic]
+	if !ok {
+		return
+	}
+
+	b.logger.Info("[=>][Publish]", "topic", topic, "msg", msg, "subs", len(subs))
+
+	for _, ch := range subs {
+		// Запускаем горутину на каждого
+		go func(c chan string) {
+			select {
+			case c <- msg:
+				// Успешно отправлено
+			default:
+				// Если канал полон
+				b.logger.Warn("[!] Subscriber slow", "topic", topic)
+			}
+		}(ch)
+	}
+}
+
+// Бонусная подзадача: Попробуй сделать так, чтобы Publish запускал горутину на каждую отправку сообщения конкретному подписчику.
