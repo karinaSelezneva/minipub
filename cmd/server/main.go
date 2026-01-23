@@ -2,13 +2,30 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
 	"sync"
 
+	server "github.com/karinaSelezneva/minipub/internal/api"
 	"github.com/karinaSelezneva/minipub/internal/broker"
 )
 
 func main() {
 	b := broker.NewBroker()
+	// Инициализируй Server с этим брокером.
+	srv := &server.Server{
+		Broker: b,
+	}
+	// Регистрируем хендлеры
+	http.HandleFunc("/publish", srv.PublishHandler)
+
+	http.HandleFunc("/subscribe", srv.SubscribeHandler)
+	// Запусти http.ListenAndServe(":8080", nil).
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Fatal("Ошибка запуска сервера:", err)
+	}
+	log.Println("🚀 Сервер запущен на :8080")
+
 	var wg sync.WaitGroup
 
 	topic := "sport"
@@ -36,9 +53,9 @@ func main() {
 	fmt.Println("🚀 Все сообщения обработаны, выходим.")
 }
 
-// Тест в main.go:
-// 1. В main создай брокер.
-// 2. Подпишись на топик "news", получив канал.
-// 3. Запусти горутину, которая читает из этого канала в бесконечном цикле и печатает текст.
-// 4. Вызови Publish("news", "Hello Go!").
-// 5. Бонусная подзадача: Попробуй сделать так, чтобы Publish запускал горутину на каждую отправку сообщения конкретному подписчику.
+// Как тестировать:
+// Открой терминал и сделай: curl "http://localhost:8080/subscribe?topic=NikePro" (он зависнет в ожидании — это нормально).
+// В другом терминале: curl -X POST -d '{"topic": "go", "message": "Rocks!"}' http://localhost:8080/publish.
+// В первом терминале должна появиться строка "Rocks!"
+
+// curl -X POST -d '{"topic": "NikePro", "message": "Just Do It!"}' http://localhost:8080/publish

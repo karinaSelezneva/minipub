@@ -92,12 +92,13 @@ func (b *Broker) Publish(topic string, msg string) {
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 
+	b.logger.Info("[=>][Publish]", "topic", topic, "msg", msg)
+
 	subs, ok := b.subsByTopic[topic]
 	if !ok {
+		b.logger.Warn("no subscribers for topic", "topic", topic)
 		return
 	}
-
-	b.logger.Info("[=>][Publish]", "topic", topic, "msg", msg, "subs", len(subs))
 
 	for _, ch := range subs {
 		// Запускаем горутину на каждого
