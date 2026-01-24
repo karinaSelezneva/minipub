@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"sync"
 
-	server "github.com/karinaSelezneva/minipub/internal/api"
 	"github.com/karinaSelezneva/minipub/internal/broker"
+	"github.com/karinaSelezneva/minipub/internal/server"
 )
 
 func main() {
@@ -57,5 +57,3 @@ func main() {
 // Открой терминал и сделай: curl "http://localhost:8080/subscribe?topic=NikePro" (он зависнет в ожидании — это нормально).
 // В другом терминале: curl -X POST -d '{"topic": "go", "message": "Rocks!"}' http://localhost:8080/publish.
 // В первом терминале должна появиться строка "Rocks!"
-
-// curl -X POST -d '{"topic": "NikePro", "message": "Just Do It!"}' http://localhost:8080/publish
